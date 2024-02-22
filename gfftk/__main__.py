@@ -12,7 +12,7 @@ from .sanitize import sanitize
 from .rename import rename
 from .stats import stats
 from .compare import compare
-
+from .truncate import truncate
 
 def main():
     args = parse_args(sys.argv[1:])
@@ -30,6 +30,8 @@ def main():
         stats(args)
     elif args.subparser_name == "compare":
         compare(args)
+    elif args.subparser_name == "truncate":
+        truncate(args)
 
 
 def parse_args(args):
@@ -46,6 +48,7 @@ def parse_args(args):
     rename_subparser(subparsers)
     stats_subparser(subparsers)
     compare_subparser(subparsers)
+    truncate_subparser(subparsers)
 
     help_args = parser.add_argument_group("Help")
     help_args.add_argument(
@@ -523,6 +526,71 @@ def compare_subparser(subparsers):
         help="show program's version number and exit",
     )
 
+def truncate_subparser(subparsers):
+    group = subparsers.add_parser(
+        "truncate",
+        description="Truncate a .tbl file (and genome fasta file if provided) based on a list of exclusion regions.",
+        help="Truncate a .tbl file (and genome fasta file if provided) based on a list of exclusion regions.",
+        formatter_class=MyHelpFormatter,
+        add_help=False,
+    )
+
+    required_args = group.add_argument_group("Required arguments")
+    required_args.add_argument(
+        "-t",
+        "--tbl",
+        required=True,
+        help="Table file",
+        metavar="",
+    )
+    
+    required_args.add_argument(
+        "-f", "--fasta", required=True, help="genome file in FASTA format", metavar="",
+    )
+    required_args.add_argument(
+        "-o",
+        "--out",
+        required=True,
+        help="Provide output filename base for .tbl and .fsa file after update",
+        metavar="",
+    )
+
+    optional_args = group.add_argument_group("Optional arguments")
+    optional_args.add_argument(
+        "--debug", action="store_true", help="write parsing errors to stderr"
+    )
+    other_args = group.add_argument_group("Other arguments")
+    other_args.add_argument(
+        "-h",
+        "--help",
+        action="help",
+        default=argparse.SUPPRESS,
+        help="show this help message and exit",
+    )
+    other_args.add_argument(
+        "--version",
+        action="version",
+        version="{} v{}".format(
+            os.path.basename(os.path.dirname(os.path.realpath(__file__))), __version__
+        ),
+        help="show program's version number and exit",
+    )
+    
+    optional_args.add_argument(
+        "-x",
+        "--cut",
+        required=False,
+        help="Region to exclude, in form of name:start-end",
+        metavar="cut",
+    )
+
+    optional_args.add_argument(
+        "-xl",
+        "--cutlist",
+        required=False,
+        help="File listing regions to exclude, one per line, in form of name:start-end",
+        metavar="cutlist",
+    )
 
 if __name__ == "__main__":
     main()
